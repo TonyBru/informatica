@@ -2,11 +2,18 @@
 <html>
   <body>
     <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
+    <button onclick="restart()">Restart</button>
+    <button onclick="togglePlayState()">play/pause</button>
+    <button onclick="skip()">Skip</button>
+    <progress style="width:600px" id="progressBar" value="0" max="100"></progress>
+
+    
     <div id="np"></div>
     
     <div id="player"></div>
     
     <p id="sugg"></p>
+    
 
     <script>
     
@@ -39,6 +46,10 @@
       function enable(event) {
         //enable gui
         //start the program
+        //enable the progress bar
+        var progressBar = setInterval(function(){
+            document.getElementById('progressBar').value = getScrollBarProgress();
+        }, 10);
       }
       
       //Handle the states
@@ -201,7 +212,11 @@
       
       //get the percentage of the song that has passed
       function getScrollBarProgress(){
-        return player.getCurrentTime()/player.getDuration()*100;
+          var perc = player.getCurrentTime()/player.getDuration()*100;
+          if(perc >= 0){
+              return perc;
+          }
+        return 0;
       }
       
       //seek to the percentage of the song
@@ -231,6 +246,21 @@
         return state;
       }
       
+      //toggle play state
+      function togglePlayState(){
+          if(getPlayState() == "playing"){
+              pause();
+          }
+          if(getPlayState() == "paused"){
+              play();
+          }
+      }
+      
+      //restart the current song
+      function restart(){
+          seek(0);
+      }
+      
       
       
       //this is the documentation
@@ -248,11 +278,13 @@
     [SCROLLBAR + SEEK]
         * getScrollBarProgress(): get the percentage of the song that has passed
         * seek(perc): seek to the percentage of the song
+        * restart(): restart the current song
         
     [PLAYSTATE]
         * pause(): pause
         * play(): play again after pause
         * getPlayState(): get the playstate, returns "playing", "paused" or any other playstatenumber
+        * togglePlayState(): toggle play state
         
     [QUEUES]
         * startOnPlaylist(reference): Start with a playlist from a user
@@ -269,6 +301,13 @@
     
     
     //window.onload = function(){startOnPlaylist("d")};
+    
+    document.getElementById('progressBar').addEventListener('click', function (e) {
+        var x = e.pageX - this.offsetLeft;
+        var xconvert = x/6; //cause width is 600px and you need a value in [0,100] range
+        seek(xconvert);
+    });
+    
     </script>
   </body>
 </html>
