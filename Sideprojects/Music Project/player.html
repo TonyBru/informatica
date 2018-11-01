@@ -2,11 +2,15 @@
 <html>
   <body>
     <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
+    <div id="np"></div>
+    
     <div id="player"></div>
+    
+    <p id="sugg"></p>
 
     <script>
     
-    
+
     
       // 2. This code loads the IFrame Player API code asynchronously.
       var tag = document.createElement('script');
@@ -23,7 +27,7 @@
           height: '390',
           width: '640',
           //disablekeyboard, no controls
-          playerVars: { 'disablekb': 1, 'controls': 0 },
+          playerVars: { 'disablekb': 1, 'controls': 0, 'iv_load_policy': 3 },
           events: {
             'onReady': enable, //player exists
             'onStateChange': stateHandler //handle all states
@@ -42,6 +46,7 @@
         //log the title of the song + play handling
         if(event.data == 1){
             console.log(player.getVideoData().title);
+            document.getElementById("np").innerHTML = player.getVideoData().title;
             //handle play
         }
         
@@ -61,14 +66,14 @@
       
       //Start with a playlist from a user
       function startOnPlaylist(reference){
-        standard = ['Pww31vN_1QY','QglaLzo_aPk','xshEZzpS4CQ','p7ZsBPK656s']; //the playlist NCS
+        standard = ['Pww31vN_1QY','QglaLzo_aPk','xshEZzpS4CQ','p7ZsBPK656s','ZRnrjxDKv6Q','lEHM9HZf0IA']; //the playlist NCS
         generateNext();
       }
       
       //start with a certain track, the rest of the queue is random
       function startOnTrack(track){
-        standard = ['tte5ve6IpKc','oqh3FuZ1c5o']; //random NIGHTCORE
-        prior.push(track);
+        standard = ['tte5ve6IpKc','oqh3FuZ1c5o','LpLr2YptJGo','IG3ZmJKm8aM']; //random NIGHTCORE
+        standard.unshift(track);
         generateNext();
       }
       
@@ -81,6 +86,7 @@
                 console.log("loading from standard: " + standard[0]);
                 player.loadVideoById(standard[0]);
                 standard.shift();
+                generateSuggestions();
             }else{
                 console.log("standard is empty");
                 player.stopVideo();
@@ -97,15 +103,38 @@
         prior.push(id);
       }
       
+      
+      //suggestions = array of random standards
+      var suggestions;
       //generate a table of suggestions from standard
       function generateSuggestions(){
         //suggestions
+        console.log(standard);
+        suggestions = standard.slice();
+        //suggestions.shuffle();
+        shuffleArray(suggestions);
+        console.log(standard);
+        suggestions = suggestions.slice(0,4);
+        document.getElementById("sugg").innerHTML = "";
+
+        var i=0, j=suggestions.length;
+        var iv = setInterval(function() {
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("GET", "https://api.etherealtri.be/keyid/?"+suggestions[i], false);
+            xmlhttp.send();
+            document.getElementById("sugg").innerHTML += '<div style="position: relative;" onclick="suggestion(\'' + suggestions[i] + '\')"><p style="position: absolute; top: 0px; left: 10px; color:white; margin-top: 5px;">' + JSON.parse(xmlhttp.responseText).title + '</p><img width="300px" src="' + JSON.parse(xmlhttp.responseText).thumb + '"/></div>';
+            if (++i>=j) clearInterval(iv);
+        }, 1);
+        
       }
+      
+      
       
       //moves from standard to prior
       function suggestion(id){
         addPrior(id);
         removeStandard(id);
+        generateSuggestions();
       }
       
       //remove an element from standard
@@ -115,6 +144,18 @@
           standard.splice(index, 1);
         }
       }
+      
+      
+      
+    function shuffleArray(array) {
+        for (var i = array.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
+        }
+    }
+      
       
       
       
@@ -225,6 +266,9 @@
     
     //log the documentation to the console
     console.log(documentation);
+    
+    
+    //window.onload = function(){startOnPlaylist("d")};
     </script>
   </body>
 </html>
