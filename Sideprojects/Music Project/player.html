@@ -211,7 +211,7 @@
             var xmlhttp = new XMLHttpRequest();
             xmlhttp.open("GET", "https://api.etherealtri.be/keyid/?"+suggestions[i], false);
             xmlhttp.send();
-            document.getElementsByTagName("td")[i].innerHTML = '<div style="position: relative;" onclick="suggestion(\'' + suggestions[i] + '\')"><p class="p">' + JSON.parse(xmlhttp.responseText).title + '</p><img width="300px" src="' + JSON.parse(xmlhttp.responseText).thumb + '"/></div>';
+            document.getElementsByTagName("td")[i].innerHTML = '<div style="position: relative;" onclick="suggestion(\'' + suggestions[i] + '\')"><p class="p">' + JSON.parse(xmlhttp.responseText).title + '</p><img width="300px" height="168.75" src="' + JSON.parse(xmlhttp.responseText).thumb + '"/></div>';
             if (++i>=j) clearInterval(iv);
         }, 1);
         
