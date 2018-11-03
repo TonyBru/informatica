@@ -1,4 +1,6 @@
- You have the possibility to administrate some funtions, they are listed below
+Needs CSS Fixing!
+
+You have the possibility to administrate some funtions, they are listed below
     
     [VOLUME]
         * lowerVolume(down): lower the volume, volume range 0-100, down=amount
