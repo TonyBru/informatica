@@ -2,6 +2,7 @@
 <html>
   <head>
 	<title>Music</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<style>
 		progress[value]::-webkit-progress-bar {
 		  background-color: #eee;
@@ -28,6 +29,47 @@
 		  height: 10px;
 		  margin: 10px;
 		}
+        
+        .p {
+             width: 290px;
+             white-space: nowrap;
+             overflow: hidden;
+             text-overflow: ellipsis;
+             
+             position: absolute;
+             top: 0px;
+             left: 0px;
+             color:white;
+             padding-top: 5px;
+             padding-bottom: 30px;
+             padding-left: 10px;
+             margin: 0px;
+             
+             background-image: linear-gradient(black 0%, rgba(255,0,0,0) 100%);
+        }
+        
+        body{
+            margin: 0px;
+            padding: 8px;
+            background-color: #121212;
+        }
+        
+        #sugg{
+            position: relative;  
+        }
+        
+        .m-fadeIn {
+          visibility: visible;
+          opacity: 1 !important;
+          transition: visibility 0s linear 0s, opacity 300ms;
+        }
+        
+        #pausemenu{
+            opacity: 0;
+            position:absolute;
+        }
+
+        
 	</style>
   </head>
   <body>
@@ -40,29 +82,26 @@
     
     <div id="np"></div>
     
-    <div style="position:relative;"><div style="position:absolute; top: 0px; left: 0px; width: 100%; height: 400px"></div><div id="player"></div></div>
+    <div style="position:relative;"><img id="pausemenu" style="width: 610px; height: 372px"/><div style="position:absolute; top: 0px; left: 0px; width: 610px; height: 372px"></div><div id="player"></div></div>
     
-    <p id="sugg"></p>
+    <table id="sugg"><tr><td></td><td></td></tr><tr><td></td><td></td></tr></table>
     
 
     <script>
     
-
     
       // 2. This code loads the IFrame Player API code asynchronously.
       var tag = document.createElement('script');
-
       tag.src = "https://www.youtube.com/iframe_api";
       var firstScriptTag = document.getElementsByTagName('script')[0];
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
       // 3. This function creates an <iframe> (and YouTube player)
       //    after the API code downloads.
       var player;
       function onYouTubeIframeAPIReady() {
         player = new YT.Player('player', {
-          height: '390',
-          width: '640',
+          height: '372',
+          width: '610',
           //disablekeyboard, no controls
           playerVars: { 'disablekb': 1, 'controls': 0, 'iv_load_policy': 3 },
           events: {
@@ -71,7 +110,6 @@
           }
         });
       }
-
       //cue the songs if the player exists
       function enable(event) {
         //enable gui
@@ -80,6 +118,7 @@
         var progressBar = setInterval(function(){
             document.getElementById('progressBar').value = getScrollBarProgress();
         }, 10);
+        startOnTrack("W9P_qUnMaFg");
       }
       
       //Handle the states
@@ -107,13 +146,13 @@
       
       //Start with a playlist from a user
       function startOnPlaylist(reference){
-        standard = ['Pww31vN_1QY','QglaLzo_aPk','xshEZzpS4CQ','p7ZsBPK656s','ZRnrjxDKv6Q','lEHM9HZf0IA']; //the playlist NCS
+        standard = ['Pww31vN_1QY','QglaLzo_aPk','xshEZzpS4CQ','p7ZsBPK656s','ZRnrjxDKv6Q','lEHM9HZf0IA','4ukOvwQmJvE']; //the playlist NCS
         generateNext();
       }
       
       //start with a certain track, the rest of the queue is random
       function startOnTrack(track){
-        standard = ['tte5ve6IpKc','oqh3FuZ1c5o','LpLr2YptJGo','IG3ZmJKm8aM']; //random NIGHTCORE
+        standard = ['tte5ve6IpKc','oqh3FuZ1c5o','LpLr2YptJGo','IG3ZmJKm8aM','b9EqnSrswEU','Wo7giXdSY2U','u_5yP3Q5heI','bYPSVTnzLSk','J8MPFmC1xK4', 'AaK20NXiOnI', 'FHL48jMKAz4', 'Qb2HWP9QNEY', 'r_2zySF7Tq4', 'XQpyKeTIIQ8', '2lmNewRoXgI', 'WmnbrghfYHY', 's21X8nLTDag', '0qx4_hspWFk', 'ZxXAWy9IQb8', 'b9b-JvPYw6A', '6eSIPxBeWYM', 'iA_p3aBipOc', 'nkAMAXSjSkE', 'uZvcKMPY7L8', 'z140kjXPbnU', 'GdxiHN7q2ew', 'jBOlEfDtG6g', 'eXWj9mcn7PY', 'VIZibp4cQ7E']; //random NIGHTCORE
         standard.unshift(track);
         generateNext();
       }
@@ -125,7 +164,7 @@
         if(!(prior && prior.length)){
             if(standard && standard.length){
                 console.log("loading from standard: " + standard[0]);
-                player.loadVideoById(standard[0]);
+                loadVideo(standard[0]);
                 standard.shift();
                 generateSuggestions();
             }else{
@@ -134,7 +173,7 @@
             }
         }else{
             console.log("loading from prior: " + prior[0]);
-            player.loadVideoById(prior[0]);
+            loadVideo(prior[0]);
             prior.shift();
         }
       }
@@ -153,14 +192,13 @@
         suggestions = standard.slice();
         shuffleArray(suggestions);
         suggestions = suggestions.slice(0,4);
-        document.getElementById("sugg").innerHTML = "";
-
+        //document.getElementById("sugg").innerHTML = "<tr><td></td><td></td></tr><tr><td></td><td></td></tr>";
         var i=0, j=suggestions.length;
         var iv = setInterval(function() {
             var xmlhttp = new XMLHttpRequest();
             xmlhttp.open("GET", "https://api.etherealtri.be/keyid/?"+suggestions[i], false);
             xmlhttp.send();
-            document.getElementById("sugg").innerHTML += '<div style="position: relative;" onclick="suggestion(\'' + suggestions[i] + '\')"><p style="position: absolute; top: 0px; left: 10px; color:white; margin-top: 5px;">' + JSON.parse(xmlhttp.responseText).title + '</p><img width="300px" src="' + JSON.parse(xmlhttp.responseText).thumb + '"/></div>';
+            document.getElementsByTagName("td")[i].innerHTML = '<div style="position: relative;" onclick="suggestion(\'' + suggestions[i] + '\')"><p class="p">' + JSON.parse(xmlhttp.responseText).title + '</p><img width="300px" src="' + JSON.parse(xmlhttp.responseText).thumb + '"/></div>';
             if (++i>=j) clearInterval(iv);
         }, 1);
         
@@ -192,6 +230,29 @@
             array[i] = array[j];
             array[j] = temp;
         }
+    }
+    
+    
+    
+    function hide() {
+       var elem = document.getElementById("pausemenu");
+       elem.classList.add("m-fadeIn");
+    }
+    
+    function show(){
+        var elem = document.getElementById("pausemenu");
+        elem.classList.remove("m-fadeIn");
+    }
+    
+    
+    
+    function loadVideo(id){
+        show();
+        player.loadVideoById(id);
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.open("GET", "https://api.etherealtri.be/keyid/?"+id, false);
+        xmlhttp.send();
+        document.getElementById("pausemenu").src = JSON.parse(xmlhttp.responseText).thumb;
     }
       
       
@@ -277,9 +338,11 @@
       function togglePlayState(){
           if(getPlayState() == "playing"){
               pause();
+              hide();
           }
           if(getPlayState() == "paused"){
               play();
+              show();
           }
       }
       
