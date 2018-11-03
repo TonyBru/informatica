@@ -58,15 +58,27 @@
             position: relative;  
         }
         
-        .m-fadeIn {
+        .i-fadeIn {
           visibility: visible;
           opacity: 1 !important;
-          transition: visibility 0s linear 0s, opacity 300ms;
+          transition: visibility 0s linear 0s, opacity 200ms;
         }
         
         #pausemenu{
             opacity: 0;
-            position:absolute;
+            
+            max-height: 100%;  
+            max-width: 100%; 
+            width: 610px;
+            height: 352px;
+            position: absolute;  
+            top: 0;  
+            bottom: 0;  
+            margin: auto;
+        }
+        
+        #np{
+            color: white;
         }
 
         
@@ -80,9 +92,9 @@
     <progress id="progressBar" value="0" max="100"></progress>
 
     
-    <div id="np"></div>
+    <p id="np"></p>
     
-    <div style="position:relative;"><img id="pausemenu" style="width: 610px; height: 372px"/><div style="position:absolute; top: 0px; left: 0px; width: 610px; height: 372px"></div><div id="player"></div></div>
+    <div style="position:relative;"><img id="pausemenu"/><div style="position:absolute; top: 0px; left: 0px; width: 610px; height: 372px"></div><div id="player"></div></div>
     
     <table id="sugg"><tr><td></td><td></td></tr><tr><td></td><td></td></tr></table>
     
@@ -119,6 +131,7 @@
             document.getElementById('progressBar').value = getScrollBarProgress();
         }, 10);
         startOnTrack("W9P_qUnMaFg");
+        //startOnPlaylist("");
       }
       
       //Handle the states
@@ -236,12 +249,12 @@
     
     function hide() {
        var elem = document.getElementById("pausemenu");
-       elem.classList.add("m-fadeIn");
+       elem.classList.add("i-fadeIn");
     }
     
     function show(){
         var elem = document.getElementById("pausemenu");
-        elem.classList.remove("m-fadeIn");
+        elem.classList.remove("i-fadeIn");
     }
     
     
@@ -337,18 +350,27 @@
       //toggle play state
       function togglePlayState(){
           if(getPlayState() == "playing"){
-              pause();
               hide();
+              sleep(200).then(() => {
+                  pause();
+              });
+              
           }
           if(getPlayState() == "paused"){
               play();
-              show();
+              sleep(200).then(() => {
+                  show();
+              });
           }
       }
       
       //restart the current song
       function restart(){
           seek(0);
+      }
+      
+      function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
       }
       
       
