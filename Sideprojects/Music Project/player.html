@@ -92,6 +92,14 @@
             font-family: Arial, Helvetica, sans-serif;
         }
         
+        #main{
+            visibility: hidden;
+        }
+        
+        #pre{
+            position: absolute;
+            top: 10px;
+        }
 
         
 	</style>
@@ -99,7 +107,7 @@
   <body>
     <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
    
-    <table>
+    <table id="main">
         <tr>
             <td><button onclick="restart()">Restart</button></td>
             <td><button onclick="togglePlayState()">play/pause</button></td>
@@ -123,8 +131,17 @@
         </tr>
     </table>
     
+    <div id="pre">
+        <button onclick="start('playlist','nightcore')">NIGHTCORE</button>
+        <button onclick="start('playlist','ncs')">NCS</button>
+    </div>
+    
 
     <script>
+    
+        window.onload = function(){
+            //generate pre
+        }
     
     
       // 2. This code loads the IFrame Player API code asynchronously.
@@ -140,10 +157,11 @@
           height: '186',
           width: '305',
           //disablekeyboard, no controls
-          playerVars: { 'disablekb': 1, 'controls': 0, 'iv_load_policy': 3 },
+          playerVars: { 'autoplay': 1, 'disablekb': 1, 'controls': 0, 'iv_load_policy': 3 },
           events: {
             'onReady': enable, //player exists
-            'onStateChange': stateHandler //handle all states
+            'onStateChange': stateHandler, //handle all states
+            'onError': errorHandler
           }
         });
       }
@@ -155,8 +173,14 @@
         var progressBar = setInterval(function(){
             document.getElementById('progressBar').value = getScrollBarProgress();
         }, 10);
-        startOnTrack("W9P_qUnMaFg");
+        //startOnTrack("W9P_qUnMaFg");
+        //startOnTrack("Az-mGR-CehY");
         //startOnPlaylist("");
+        
+      }
+      
+      function errorHandler(event){
+        console.log(event.data);
       }
       
       //Handle the states
@@ -184,16 +208,23 @@
       
       //Start with a playlist from a user
       function startOnPlaylist(reference){
-        standard = ['Pww31vN_1QY','QglaLzo_aPk','xshEZzpS4CQ','p7ZsBPK656s','ZRnrjxDKv6Q','lEHM9HZf0IA','4ukOvwQmJvE']; //the playlist NCS
+        //standard = ['Pww31vN_1QY','QglaLzo_aPk','xshEZzpS4CQ','p7ZsBPK656s','ZRnrjxDKv6Q','lEHM9HZf0IA','4ukOvwQmJvE']; //the playlist NCS
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.open("GET", "https://api.etherealtri.be/playlist/?"+reference, false);
+        xmlhttp.send();
+        resp = xmlhttp.responseText;
+        resp = resp.slice(1,-1);
+        resp = resp.replace(/'/g,'');
+        standard = resp.split(",");
         generateNext();
       }
       
       //start with a certain track, the rest of the queue is random
-      function startOnTrack(track){
+      /*function startOnTrack(track){
         standard = ['tte5ve6IpKc','oqh3FuZ1c5o','LpLr2YptJGo','IG3ZmJKm8aM','b9EqnSrswEU','Wo7giXdSY2U','u_5yP3Q5heI','bYPSVTnzLSk','J8MPFmC1xK4', 'AaK20NXiOnI', 'FHL48jMKAz4', 'Qb2HWP9QNEY', 'r_2zySF7Tq4', 'XQpyKeTIIQ8', '2lmNewRoXgI', 'WmnbrghfYHY', 's21X8nLTDag', '0qx4_hspWFk', 'ZxXAWy9IQb8', 'b9b-JvPYw6A', '6eSIPxBeWYM', 'iA_p3aBipOc', 'nkAMAXSjSkE', 'uZvcKMPY7L8', 'z140kjXPbnU', 'GdxiHN7q2ew', 'jBOlEfDtG6g', 'eXWj9mcn7PY', 'VIZibp4cQ7E']; //random NIGHTCORE
         standard.unshift(track);
         generateNext();
-      }
+      }*/
       
       
        
@@ -296,6 +327,17 @@
         xmlhttp.send();
         document.getElementById("pausemenu").src = JSON.parse(xmlhttp.responseText).thumb;
     }
+    
+    function start(type, id){
+        document.getElementById("pre").style.visibility = "hidden";
+        /*if(type == "track"){
+            startOnTrack(id);
+        }*/
+        if(type == "playlist"){
+            startOnPlaylist(id);
+        }
+        document.getElementById("main").style.visibility = "visible";
+    }
       
       
       
@@ -384,12 +426,14 @@
                   pause();
               });
               
-          }
+          }else
           if(getPlayState() == "paused"){
               play();
               sleep(200).then(() => {
                   show();
               });
+          }else{
+            play();
           }
       }
       
