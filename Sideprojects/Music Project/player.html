@@ -11,7 +11,7 @@
 		}
 		
 		progress[value]::-webkit-progress-value {
-		  background-color: blue;
+		  background-color: #e0741d;
 			border-radius: 16px; 
 		}
 		
@@ -25,13 +25,13 @@
 		  border: none;
 		  
 		  /* Dimensions */
-		  width: 600px;
+		  width: 300px;
 		  height: 10px;
-		  margin: 10px;
+		  margin: 5px 0px;
 		}
         
         .p {
-             width: 290px;
+             width: 140px;
              white-space: nowrap;
              overflow: hidden;
              text-overflow: ellipsis;
@@ -41,8 +41,8 @@
              left: 0px;
              color:white;
              padding-top: 5px;
-             padding-bottom: 30px;
-             padding-left: 10px;
+             padding-bottom: 20px;
+             padding-left: 5px;
              margin: 0px;
              
              background-image: linear-gradient(black 0%, rgba(255,0,0,0) 100%);
@@ -55,7 +55,8 @@
         }
         
         #sugg{
-            position: relative;  
+            position: relative;
+            font-size: 12px;
         }
         
         .i-fadeIn {
@@ -69,8 +70,8 @@
             
             max-height: 100%;  
             max-width: 100%; 
-            width: 610px;
-            height: 352px;
+            width: 305px;
+            height: 176px;
             position: absolute;  
             top: 0;  
             bottom: 0;  
@@ -79,24 +80,48 @@
         
         #np{
             color: white;
+            margin: 5px auto;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 305px;
         }
+        
+        table{
+            text-align: center;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        
 
         
 	</style>
   </head>
   <body>
     <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
-    <button onclick="restart()">Restart</button>
-    <button onclick="togglePlayState()">play/pause</button>
-    <button onclick="skip()">Skip</button>
-    <progress id="progressBar" value="0" max="100"></progress>
-
-    
-    <p id="np"></p>
-    
-    <div style="position:relative;"><img id="pausemenu"/><div style="position:absolute; top: 0px; left: 0px; width: 610px; height: 372px"></div><div id="player"></div></div>
-    
-    <table id="sugg"><tr><td></td><td></td></tr><tr><td></td><td></td></tr></table>
+   
+    <table>
+        <tr>
+            <td><button onclick="restart()">Restart</button></td>
+            <td><button onclick="togglePlayState()">play/pause</button></td>
+            <td><button onclick="skip()">Skip</button></td>
+        </tr>
+        
+        <tr>
+            <td colspan="3"><p id="np">Loading...</p></td>
+        </tr>
+        
+        <tr>
+            <td colspan="3"><progress id="progressBar" value="0" max="100"></progress></td>
+        </tr>
+        
+        <tr>
+            <td colspan="3"><div style="position:relative; width: 305px; height: 186px"><img id="pausemenu"/><div style="position:absolute; top: 0px; left: 0px; width: 305px; height: 186px"></div><div id="player"></div></div></td>
+        </tr>
+        
+        <tr>
+            <td colspan="3"><table id="sugg"><tr><td></td><td></td></tr><tr><td></td><td></td></tr></table></td>
+        </tr>
+    </table>
     
 
     <script>
@@ -112,8 +137,8 @@
       var player;
       function onYouTubeIframeAPIReady() {
         player = new YT.Player('player', {
-          height: '372',
-          width: '610',
+          height: '186',
+          width: '305',
           //disablekeyboard, no controls
           playerVars: { 'disablekb': 1, 'controls': 0, 'iv_load_policy': 3 },
           events: {
@@ -206,12 +231,16 @@
         shuffleArray(suggestions);
         suggestions = suggestions.slice(0,4);
         //document.getElementById("sugg").innerHTML = "<tr><td></td><td></td></tr><tr><td></td><td></td></tr>";
-        var i=0, j=suggestions.length;
+        var i=0, j=4;
         var iv = setInterval(function() {
-            var xmlhttp = new XMLHttpRequest();
-            xmlhttp.open("GET", "https://api.etherealtri.be/keyid/?"+suggestions[i], false);
-            xmlhttp.send();
-            document.getElementsByTagName("td")[i].innerHTML = '<div style="position: relative;" onclick="suggestion(\'' + suggestions[i] + '\')"><p class="p">' + JSON.parse(xmlhttp.responseText).title + '</p><img width="300px" height="168.75" src="' + JSON.parse(xmlhttp.responseText).thumb + '"/></div>';
+            if(i<suggestions.length){
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.open("GET", "https://api.etherealtri.be/keyid/?"+suggestions[i], false);
+                xmlhttp.send();
+                document.getElementById("sugg").getElementsByTagName("td")[i].innerHTML = '<div style="position: relative;" onclick="suggestion(\'' + suggestions[i] + '\')"><p class="p">' + JSON.parse(xmlhttp.responseText).title + '</p><img width="145px" height="81.5" src="' + JSON.parse(xmlhttp.responseText).thumb + '"/></div>';
+            }else{
+                document.getElementById("sugg").getElementsByTagName("td")[i].innerHTML = "";
+            }
             if (++i>=j) clearInterval(iv);
         }, 1);
         
@@ -260,8 +289,8 @@
     
     
     function loadVideo(id){
-        show();
         player.loadVideoById(id);
+        show();
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.open("GET", "https://api.etherealtri.be/keyid/?"+id, false);
         xmlhttp.send();
@@ -412,11 +441,10 @@
     console.log(documentation);
     
     
-    //window.onload = function(){startOnPlaylist("d")};
-    
     document.getElementById('progressBar').addEventListener('click', function (e) {
         var x = e.pageX - this.offsetLeft;
-        var xconvert = x/6; //cause width is 600px and you need a value in [0,100] range
+        //console.log(x);
+        var xconvert = (x-8)/3; //cause width is 300px and you need a value in [0,100] range
         seek(xconvert);
     });
     
