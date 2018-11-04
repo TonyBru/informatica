@@ -199,6 +199,7 @@
         
         //play the next song when end
         if(event.data == 0){
+			document.getElementById("np").innerHTML = "&nbsp;";
             generateNext();
         }
       }
@@ -215,6 +216,7 @@
         resp = xmlhttp.responseText;
         resp = resp.slice(1,-1);
         resp = resp.replace(/'/g,'');
+		resp = resp.replace(/\s/g, '');
         standard = resp.split(",");
         generateNext();
       }
@@ -379,6 +381,7 @@
       
       //skip to the next song
       function skip(){
+		document.getElementById("np").innerHTML = "&nbsp;";
         generateNext();
       }
       
