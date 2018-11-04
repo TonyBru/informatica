@@ -28,6 +28,8 @@
 		  width: 300px;
 		  height: 10px;
 		  margin: 5px 0px;
+          
+          cursor: pointer;
 		}
         
         .p {
@@ -57,6 +59,10 @@
         #sugg{
             position: relative;
             font-size: 12px;
+        }
+        
+        #sugg td{
+            cursor: pointer;
         }
         
         .i-fadeIn {
@@ -99,8 +105,18 @@
         #pre{
             position: absolute;
             top: 10px;
+            visibility: hidden;
         }
-
+        
+        
+        .playlist{
+            margin: 5px;
+            cursor: pointer;
+        }
+        
+        .slider{
+            cursor: pointer;
+        }
         
 	</style>
   </head>
@@ -109,25 +125,26 @@
    
     <table id="main">
         <tr>
-            <td><button onclick="restart()">Restart</button></td>
-            <td><button onclick="togglePlayState()">play/pause</button></td>
-            <td><button onclick="skip()">Skip</button></td>
+            <td><img src="./sr.png" style="transform: rotate(-90deg); cursor: pointer;" onclick="restart()"/></td>
+            <td><img id="playb" src="./pause.png" style="transform: rotate(90deg); cursor: pointer;" onclick="togglePlayState()"/></td>
+            <td><img src="./sr.png" style="transform: rotate(90deg); cursor: pointer;" onclick="skip()"/></td>
+            <td><input type="range" min="0" max="100" value="0" class="slider" id="volume"></td>
         </tr>
         
         <tr>
-            <td colspan="3"><p id="np">Loading...</p></td>
+            <td colspan="4"><p id="np">Loading...</p></td>
         </tr>
         
         <tr>
-            <td colspan="3"><progress id="progressBar" value="0" max="100"></progress></td>
+            <td colspan="4"><progress id="progressBar" value="0" max="100"></progress></td>
         </tr>
         
         <tr>
-            <td colspan="3"><div style="position:relative; width: 305px; height: 186px"><img id="pausemenu"/><div style="position:absolute; top: 0px; left: 0px; width: 305px; height: 186px"></div><div id="player"></div></div></td>
+            <td colspan="4"><div style="position:relative; width: 305px; height: 186px"><img id="pausemenu"/><div style="position:absolute; top: 0px; left: 0px; width: 305px; height: 186px"></div><div id="player"></div></div></td>
         </tr>
         
         <tr>
-            <td colspan="3"><table id="sugg"><tr><td></td><td></td></tr><tr><td></td><td></td></tr></table></td>
+            <td colspan="4"><table id="sugg"><tr><td></td><td></td></tr><tr><td></td><td></td></tr></table></td>
         </tr>
     </table>
     
@@ -141,6 +158,18 @@
     
         window.onload = function(){
             //generate pre
+            var pre = document.getElementById("pre");
+            pre.innerHTML = "";
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("GET", "https://api.etherealtri.be/start/", false);
+            xmlhttp.send();
+            playlist = JSON.parse(xmlhttp.responseText);
+            
+            Object.keys(playlist).forEach(function(k){
+                pre.innerHTML += '<button class="playlist" onclick="start(\'' + playlist[k] + '\')">' + k + '</button><br/>';
+            });
+            
+            pre.style.visibility = "visible";
         }
     
     
@@ -173,6 +202,9 @@
         var progressBar = setInterval(function(){
             document.getElementById('progressBar').value = getScrollBarProgress();
         }, 10);
+        
+        var vol = document.getElementById("volume");
+        vol.value = getVolume();
         //startOnTrack("W9P_qUnMaFg");
         //startOnTrack("Az-mGR-CehY");
         //startOnPlaylist("");
@@ -210,6 +242,19 @@
       //Start with a playlist from a user
       function startOnPlaylist(reference){
         //standard = ['Pww31vN_1QY','QglaLzo_aPk','xshEZzpS4CQ','p7ZsBPK656s','ZRnrjxDKv6Q','lEHM9HZf0IA','4ukOvwQmJvE']; //the playlist NCS
+        getOnlineList(reference);
+        generateNext();
+      }
+      
+      //start with a certain track, the rest of the queue is random
+      /*function startOnTrack(track){
+        //standard = ['tte5ve6IpKc','oqh3FuZ1c5o','LpLr2YptJGo','IG3ZmJKm8aM','b9EqnSrswEU','Wo7giXdSY2U','u_5yP3Q5heI','bYPSVTnzLSk','J8MPFmC1xK4', 'AaK20NXiOnI', 'FHL48jMKAz4', 'Qb2HWP9QNEY', 'r_2zySF7Tq4', 'XQpyKeTIIQ8', '2lmNewRoXgI', 'WmnbrghfYHY', 's21X8nLTDag', '0qx4_hspWFk', 'ZxXAWy9IQb8', 'b9b-JvPYw6A', '6eSIPxBeWYM', 'iA_p3aBipOc', 'nkAMAXSjSkE', 'uZvcKMPY7L8', 'z140kjXPbnU', 'GdxiHN7q2ew', 'jBOlEfDtG6g', 'eXWj9mcn7PY', 'VIZibp4cQ7E']; //random NIGHTCORE
+        getOnlineList("nightcore");
+        standard.unshift(track);
+        generateNext();
+      }*/
+      
+      function getOnlineList(reference){
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.open("GET", "https://api.etherealtri.be/playlist/?"+reference, false);
         xmlhttp.send();
@@ -218,15 +263,7 @@
         resp = resp.replace(/'/g,'');
 		resp = resp.replace(/\s/g, '');
         standard = resp.split(",");
-        generateNext();
       }
-      
-      //start with a certain track, the rest of the queue is random
-      /*function startOnTrack(track){
-        standard = ['tte5ve6IpKc','oqh3FuZ1c5o','LpLr2YptJGo','IG3ZmJKm8aM','b9EqnSrswEU','Wo7giXdSY2U','u_5yP3Q5heI','bYPSVTnzLSk','J8MPFmC1xK4', 'AaK20NXiOnI', 'FHL48jMKAz4', 'Qb2HWP9QNEY', 'r_2zySF7Tq4', 'XQpyKeTIIQ8', '2lmNewRoXgI', 'WmnbrghfYHY', 's21X8nLTDag', '0qx4_hspWFk', 'ZxXAWy9IQb8', 'b9b-JvPYw6A', '6eSIPxBeWYM', 'iA_p3aBipOc', 'nkAMAXSjSkE', 'uZvcKMPY7L8', 'z140kjXPbnU', 'GdxiHN7q2ew', 'jBOlEfDtG6g', 'eXWj9mcn7PY', 'VIZibp4cQ7E']; //random NIGHTCORE
-        standard.unshift(track);
-        generateNext();
-      }*/
       
       
        
@@ -330,14 +367,9 @@
         document.getElementById("pausemenu").src = JSON.parse(xmlhttp.responseText).thumb;
     }
     
-    function start(type, id){
+    function start(id){
         document.getElementById("pre").style.visibility = "hidden";
-        /*if(type == "track"){
-            startOnTrack(id);
-        }*/
-        if(type == "playlist"){
-            startOnPlaylist(id);
-        }
+        startOnPlaylist(id);
         document.getElementById("main").style.visibility = "visible";
     }
       
@@ -350,7 +382,7 @@
       
       //lower the volume, volume range 0-100, down=amount
       function lowerVolume(down){
-        var cur = player.getVolume();
+        var cur = getVolume();
         var newv = cur-down;
         if(newv<0){
             newv = 0;
@@ -360,7 +392,7 @@
       
       //raise the volume, volume range 0-100, up=amount
       function raiseVolume(up){
-        var cur = player.getVolume();
+        var cur = getVolume();
         var newv = cur+up;
         if(newv>100){
             newv = 100;
@@ -377,6 +409,10 @@
             vol = 0;
         }
         player.setVolume(vol);
+      }
+      
+      function getVolume(){
+        return player.getVolume();
       }
       
       //skip to the next song
@@ -424,6 +460,7 @@
       //toggle play state
       function togglePlayState(){
           if(getPlayState() == "playing"){
+              document.getElementById("playb").src = "./play.png";
               hide();
               sleep(200).then(() => {
                   pause();
@@ -431,6 +468,7 @@
               
           }else
           if(getPlayState() == "paused"){
+              document.getElementById("playb").src = "./pause.png";
               play();
               sleep(200).then(() => {
                   show();
@@ -476,7 +514,6 @@
         
     [QUEUES]
         * startOnPlaylist(reference): Start with a playlist from a user
-        * startOnTrack(track): start with a certain track, the rest of the queue is random
         * suggestion(id): moves from standard to prior
         
     [QUEUES EXTENDED]
@@ -494,6 +531,10 @@
         var xconvert = (x-8)/3; //cause width is 300px and you need a value in [0,100] range
         seek(xconvert);
     });
+    
+    document.getElementById("volume").oninput = function() {
+        setVolume(this.value);
+    }
     
     </script>
   </body>
