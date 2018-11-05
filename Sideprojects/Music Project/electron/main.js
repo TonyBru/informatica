@@ -12,8 +12,8 @@ const { app, BrowserWindow, globalShortcut } = require('electron')
 
 function createWindow () {
   // Create the browser window.
-  win = new BrowserWindow({ alwaysOnTop: true, width: 327, height: 503, frame: false, icon: './ico/icon.ico', backgroundColor: '#121212', webPreferences: {devTools: false} })
-  win.setPosition(1920-327,1080-503)
+  win = new BrowserWindow({ alwaysOnTop: true, width: 327, height: 495, frame: false, icon: './ico/icon.ico', backgroundColor: '#121212', webPreferences: {devTools: false} })
+  win.setPosition(1920-327,1080-495)
   win.setResizable(false)
   win.on('closed', () => {
     win = null
@@ -32,7 +32,7 @@ function createWindow () {
   
 
   // and load the index.html of the app.
-  win.loadURL('http://localhost')
+  win.loadURL('http://localhost', {"extraHeaders" : "pragma: no-cache\n"})
 }
 
 app.on('ready', createWindow)
