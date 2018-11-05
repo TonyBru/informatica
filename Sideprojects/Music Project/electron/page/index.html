@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<title>Music</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<style>
+		progress[value]::-webkit-progress-bar {
+		  background-color: #eee;
+		  border-radius: 16px;
+		  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25) inset;
+		}
+		
+		progress[value]::-webkit-progress-value {
+		  background-color: #e0741d;
+			border-radius: 16px; 
+		}
+		
+		progress[value] {
+		  /* Reset the default appearance */
+		  -webkit-appearance: none;
+			 -moz-appearance: none;
+				  appearance: none;
+		  
+		  /* Get rid of default border in Firefox. */
+		  border: none;
+		  
+		  /* Dimensions */
+		  width: 300px;
+		  height: 10px;
+		  margin: 5px 0px;
+          
+          cursor: pointer;
+		}
+        
+        .p {
+             width: 140px;
+             white-space: nowrap;
+             overflow: hidden;
+             text-overflow: ellipsis;
+             
+             position: absolute;
+             top: 0px;
+             left: 0px;
+             color:white;
+             padding-top: 5px;
+             padding-bottom: 20px;
+             padding-left: 5px;
+             margin: 0px;
+             
+             background-image: linear-gradient(black 0%, rgba(255,0,0,0) 100%);
+        }
+        
+        body{
+            margin: 0px;
+            padding: 8px;
+            background-color: #121212;
+        }
+        
+        #sugg{
+            position: relative;
+            font-size: 12px;
+        }
+        
+        #sugg td{
+            cursor: pointer;
+        }
+        
+        .i-fadeIn {
+          visibility: visible;
+          opacity: 1 !important;
+          transition: visibility 0s linear 0s, opacity 200ms;
+        }
+        
+        #pausemenu{
+            opacity: 0;
+            
+            max-height: 100%;  
+            max-width: 100%; 
+            width: 305px;
+            height: 176px;
+            position: absolute;  
+            top: 0;  
+            bottom: 0;  
+            margin: auto;
+        }
+        
+        #np{
+            color: white;
+            margin: 5px auto;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 305px;
+        }
+        
+        table{
+            text-align: center;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        
+        #main{
+            visibility: hidden;
+        }
+        
+        #pre{
+            position: absolute;
+            top: 10px;
+            visibility: hidden;
+        }
+        
+        
+        .playlist{
+            margin: 5px;
+            cursor: pointer;
+        }
+        
+        .slider{
+            cursor: pointer;
+        }
+        
+        .slider:focus {
+            outline: none;
+        }
+        
+	</style>
+  </head>
+  <body>
+    <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
+   
+    <table id="main">
+        <tr>
+            <td><img src="./sr.png" style="transform: rotate(-90deg); cursor: pointer;" onclick="restart()"/></td>
+            <td><img id="playb" src="./pause.png" style="transform: rotate(90deg); cursor: pointer;" onclick="togglePlayState()"/></td>
+            <td><img src="./sr.png" style="transform: rotate(90deg); cursor: pointer;" onclick="skip()"/></td>
+            <td><input type="range" min="0" max="100" value="0" class="slider" id="volume"></td>
+        </tr>
+        
+        <tr>
+            <td colspan="4"><p id="np">Loading...</p></td>
+        </tr>
+        
+        <tr>
+            <td colspan="4"><progress id="progressBar" value="0" max="100"></progress></td>
+        </tr>
+        
+        <tr>
+            <td colspan="4"><div style="position:relative; width: 305px; height: 186px"><img id="pausemenu"/><div style="position:absolute; top: 0px; left: 0px; width: 305px; height: 186px"></div><div id="player"></div></div></td>
+        </tr>
+        
+        <tr>
+            <td colspan="4"><table id="sugg"><tr><td></td><td></td></tr><tr><td></td><td></td></tr></table></td>
+        </tr>
+    </table>
+    
+    <div id="pre">
+        <button onclick="start('playlist','nightcore')">NIGHTCORE</button>
+        <button onclick="start('playlist','ncs')">NCS</button>
+    </div>
+    
+
+    <script>
+    
+        window.onload = function(){
+            //generate pre
+            var pre = document.getElementById("pre");
+            pre.innerHTML = "";
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("GET", "https://api.etherealtri.be/start/", false);
+            xmlhttp.send();
+            playlist = JSON.parse(xmlhttp.responseText);
+            
+            Object.keys(playlist).forEach(function(k){
+                pre.innerHTML += '<button class="playlist" onclick="start(\'' + playlist[k] + '\')">' + k + '</button><br/>';
+            });
+            
+            pre.style.visibility = "visible";
+        }
+    
+    
+      // 2. This code loads the IFrame Player API code asynchronously.
+      var tag = document.createElement('script');
+      tag.src = "https://www.youtube.com/iframe_api";
+      var firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+      // 3. This function creates an <iframe> (and YouTube player)
+      //    after the API code downloads.
+      var player;
+      function onYouTubeIframeAPIReady() {
+        player = new YT.Player('player', {
+          height: '186',
+          width: '305',
+          //disablekeyboard, no controls
+          playerVars: { 'autoplay': 1, 'disablekb': 1, 'controls': 0, 'iv_load_policy': 3 },
+          events: {
+            'onReady': enable, //player exists
+            'onStateChange': stateHandler, //handle all states
+            'onError': errorHandler
+          }
+        });
+      }
+      //cue the songs if the player exists
+      function enable(event) {
+        //enable gui
+        //start the program
+        //enable the progress bar
+        var progressBar = setInterval(function(){
+            document.getElementById('progressBar').value = getScrollBarProgress();
+        }, 10);
+        
+        var vol = document.getElementById("volume");
+        vol.value = getVolume();
+        //startOnTrack("W9P_qUnMaFg");
+        //startOnTrack("Az-mGR-CehY");
+        //startOnPlaylist("");
+        
+      }
+      
+      function errorHandler(event){
+        console.log(event.data);
+      }
+      
+      //Handle the states
+      function stateHandler(event){
+        //log the title of the song + play handling
+        if(event.data == 1){
+            console.log(player.getVideoData().title);
+            document.getElementById("np").innerHTML = player.getVideoData().title;
+            //handle play
+        }
+        
+        //handle pause
+        if(event.data == 2){
+            //handle pause
+        }
+        
+        //play the next song when end
+        if(event.data == 0){
+			document.getElementById("np").innerHTML = "&nbsp;";
+            generateNext();
+        }
+      }
+      
+      var standard; //init standard queue
+      var prior = []; //init prior queue
+      
+      //Start with a playlist from a user
+      function startOnPlaylist(reference){
+        //standard = ['Pww31vN_1QY','QglaLzo_aPk','xshEZzpS4CQ','p7ZsBPK656s','ZRnrjxDKv6Q','lEHM9HZf0IA','4ukOvwQmJvE']; //the playlist NCS
+        getOnlineList(reference);
+        generateNext();
+      }
+      
+      //start with a certain track, the rest of the queue is random
+      /*function startOnTrack(track){
+        //standard = ['tte5ve6IpKc','oqh3FuZ1c5o','LpLr2YptJGo','IG3ZmJKm8aM','b9EqnSrswEU','Wo7giXdSY2U','u_5yP3Q5heI','bYPSVTnzLSk','J8MPFmC1xK4', 'AaK20NXiOnI', 'FHL48jMKAz4', 'Qb2HWP9QNEY', 'r_2zySF7Tq4', 'XQpyKeTIIQ8', '2lmNewRoXgI', 'WmnbrghfYHY', 's21X8nLTDag', '0qx4_hspWFk', 'ZxXAWy9IQb8', 'b9b-JvPYw6A', '6eSIPxBeWYM', 'iA_p3aBipOc', 'nkAMAXSjSkE', 'uZvcKMPY7L8', 'z140kjXPbnU', 'GdxiHN7q2ew', 'jBOlEfDtG6g', 'eXWj9mcn7PY', 'VIZibp4cQ7E']; //random NIGHTCORE
+        getOnlineList("nightcore");
+        standard.unshift(track);
+        generateNext();
+      }*/
+      
+      function getOnlineList(reference){
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.open("GET", "https://api.etherealtri.be/playlist/?"+reference, false);
+        xmlhttp.send();
+        resp = xmlhttp.responseText;
+        resp = resp.slice(1,-1);
+        resp = resp.replace(/'/g,'');
+		resp = resp.replace(/\s/g, '');
+        standard = resp.split(",");
+      }
+      
+      
+       
+      //generate the next song
+      function generateNext(){
+        if(!(prior && prior.length)){
+            if(standard && standard.length){
+                console.log("loading from standard: " + standard[0]);
+                loadVideo(standard[0]);
+                standard.shift();
+                generateSuggestions();
+            }else{
+                console.log("standard is empty");
+                player.stopVideo();
+            }
+        }else{
+            console.log("loading from prior: " + prior[0]);
+            loadVideo(prior[0]);
+            prior.shift();
+        }
+      }
+      
+      //adds a song to the prior
+      function addPrior(id){
+        prior.push(id);
+      }
+      
+      
+      //suggestions = array of random standards
+      var suggestions;
+      //generate a table of suggestions from standard
+      function generateSuggestions(){
+        //suggestions
+        suggestions = standard.slice();
+        shuffleArray(suggestions);
+        suggestions = suggestions.slice(0,4);
+        //document.getElementById("sugg").innerHTML = "<tr><td></td><td></td></tr><tr><td></td><td></td></tr>";
+        var i=0, j=4;
+        var iv = setInterval(function() {
+            if(i<suggestions.length){
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.open("GET", "https://api.etherealtri.be/keyid/?"+suggestions[i], false);
+                xmlhttp.send();
+                document.getElementById("sugg").getElementsByTagName("td")[i].innerHTML = '<div style="position: relative;" onclick="suggestion(\'' + suggestions[i] + '\')"><p class="p">' + JSON.parse(xmlhttp.responseText).title + '</p><img width="145px" height="81.5" src="' + JSON.parse(xmlhttp.responseText).thumb + '"/></div>';
+            }else{
+                document.getElementById("sugg").getElementsByTagName("td")[i].innerHTML = "";
+            }
+            if (++i>=j) clearInterval(iv);
+        }, 1);
+        
+      }
+      
+      
+      
+      //moves from standard to prior
+      function suggestion(id){
+        addPrior(id);
+        removeStandard(id);
+        generateSuggestions();
+      }
+      
+      //remove an element from standard
+      function removeStandard(id){
+        var index = standard.indexOf(id);
+        if (index > -1) {
+          standard.splice(index, 1);
+        }
+      }
+      
+      
+      
+    function shuffleArray(array) {
+        for (var i = array.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
+        }
+    }
+    
+    
+    
+    function hide() {
+       var elem = document.getElementById("pausemenu");
+       elem.classList.add("i-fadeIn");
+    }
+    
+    function show(){
+        var elem = document.getElementById("pausemenu");
+        elem.classList.remove("i-fadeIn");
+    }
+    
+    
+    
+    function loadVideo(id){
+        player.loadVideoById(id);
+        show();
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.open("GET", "https://api.etherealtri.be/keyid/?"+id, false);
+        xmlhttp.send();
+        document.getElementById("pausemenu").src = JSON.parse(xmlhttp.responseText).thumb;
+    }
+    
+    function start(id){
+        document.getElementById("pre").style.visibility = "hidden";
+        startOnPlaylist(id);
+        document.getElementById("main").style.visibility = "visible";
+    }
+      
+      
+      
+      
+      /*#################################*/
+      /*#THESE ARE THE PLAYER CONTROL FUNCTIONS#*/
+      /*################################*/
+      
+      //lower the volume, volume range 0-100, down=amount
+      function lowerVolume(down){
+        var cur = getVolume();
+        var newv = cur-down;
+        if(newv<0){
+            newv = 0;
+        }
+        player.setVolume(newv);
+      }
+      
+      //raise the volume, volume range 0-100, up=amount
+      function raiseVolume(up){
+        var cur = getVolume();
+        var newv = cur+up;
+        if(newv>100){
+            newv = 100;
+        }
+        player.setVolume(newv);
+      }
+      
+      //set the volume in absolute numbers 0-100
+      function setVolume(vol){
+        if(vol > 100){
+            vol = 100;
+        }
+        if(vol < 0){
+            vol = 0;
+        }
+        player.setVolume(vol);
+      }
+      
+      function getVolume(){
+        return player.getVolume();
+      }
+      
+      //skip to the next song
+      function skip(){
+		document.getElementById("np").innerHTML = "&nbsp;";
+        generateNext();
+      }
+      
+      //get the percentage of the song that has passed
+      function getScrollBarProgress(){
+          var perc = player.getCurrentTime()/player.getDuration()*100;
+          if(perc >= 0){
+              return perc;
+          }
+        return 0;
+      }
+      
+      //seek to the percentage of the song
+      function seek(perc){
+        player.seekTo(player.getDuration()/100*perc);
+      }
+      
+      //pause
+      function pause(){
+        player.pauseVideo();
+      }
+      
+      //play again after pause
+      function play(){
+        player.playVideo();
+      }
+      
+      //get the playstate, returns "playing", "paused" or any other playstatenumber
+      function getPlayState(){
+        var state = player.getPlayerState();
+        if(state == 1){
+            return "playing";
+        }
+        if(state == 2){
+            return "paused";
+        }
+        return state;
+      }
+      
+      //toggle play state
+      function togglePlayState(){
+          if(getPlayState() == "playing"){
+              document.getElementById("playb").src = "./play.png";
+              hide();
+              sleep(200).then(() => {
+                  pause();
+              });
+              
+          }else
+          if(getPlayState() == "paused"){
+              document.getElementById("playb").src = "./pause.png";
+              play();
+              sleep(200).then(() => {
+                  show();
+              });
+          }else{
+            play();
+          }
+      }
+      
+      //restart the current song
+      function restart(){
+          seek(0);
+      }
+      
+      function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
+      
+      
+      
+      //this is the documentation
+    var documentation = `
+    You have the possibility to administrate some funtions, they are listed below
+    
+    [VOLUME]
+        * lowerVolume(down): lower the volume, volume range 0-100, down=amount
+        * raiseVolume(up): raise the volume, volume range 0-100, up=amount
+        * setVolume(vol): set the volume in absolute numbers 0-100
+    
+    [SONG MANAGEMENT]
+        * skip(): skip to the next song
+    
+    [SCROLLBAR + SEEK]
+        * getScrollBarProgress(): get the percentage of the song that has passed
+        * seek(perc): seek to the percentage of the song
+        * restart(): restart the current song
+        
+    [PLAYSTATE]
+        * pause(): pause
+        * play(): play again after pause
+        * getPlayState(): get the playstate, returns "playing", "paused" or any other playstatenumber
+        * togglePlayState(): toggle play state
+        
+    [QUEUES]
+        * startOnPlaylist(reference): Start with a playlist from a user
+        * suggestion(id): moves from standard to prior
+        
+    [QUEUES EXTENDED]
+        * addPrior(id): adds a song to the prior
+        * removeStandard(id): remove an element from standard
+    `;
+    
+    //log the documentation to the console
+    console.log(documentation);
+    
+    
+    document.getElementById('progressBar').addEventListener('click', function (e) {
+        var x = e.pageX - this.offsetLeft;
+        //console.log(x);
+        var xconvert = (x-8)/3; //cause width is 300px and you need a value in [0,100] range
+        seek(xconvert);
+    });
+    
+    document.getElementById("volume").oninput = function() {
+        setVolume(this.value);
+    }
+    
+    </script>
+  </body>
+</html>
