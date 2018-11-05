@@ -12,8 +12,8 @@ const { app, BrowserWindow, globalShortcut } = require('electron')
 
 function createWindow () {
   // Create the browser window.
-  win = new BrowserWindow({ alwaysOnTop: true, width: 327, height: 502, frame: false, icon: './ico/icon.ico', backgroundColor: '#121212', webPreferences: {devTools: false} })
-  win.setPosition(1920-327,1080-502)
+  win = new BrowserWindow({ alwaysOnTop: true, width: 327, height: 503, frame: false, icon: './ico/icon.ico', backgroundColor: '#121212', webPreferences: {devTools: false} })
+  win.setPosition(1920-327,1080-503)
   win.setResizable(false)
   win.on('closed', () => {
     win = null
