@@ -33,7 +33,7 @@
 		}
         
         .p {
-             width: 139px;
+             width: 140px;
              white-space: nowrap;
              overflow: hidden;
              text-overflow: ellipsis;
@@ -85,6 +85,8 @@
             top: 0;  
             bottom: 0;  
             margin: auto;
+            
+            z-index: 5;
         }
         
         #np{
@@ -125,6 +127,21 @@
             outline: none;
         }
         
+        #bg{
+            background-color: #e0741d;
+            width: 100%;
+            margin: 0px;
+            height: 15px;
+            font-size: 11px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: white;
+            position:absolute;
+            top: 0;
+            z-index: 10;
+        }
+        
 	</style>
   </head>
   <body>
@@ -147,7 +164,7 @@
         </tr>
         
         <tr>
-            <td colspan="4"><div style="position:relative; width: 305px; height: 186px"><img id="pausemenu"/><div style="position:absolute; top: 0px; left: 0px; width: 305px; height: 186px"></div><div id="player"></div></div></td>
+            <td colspan="4"><div style="position:relative; width: 305px; height: 186px"><div id="bg">Next:</div><img id="pausemenu"/><div style="position:absolute; top: 0px; left: 0px; width: 305px; height: 186px; z-index: 50"></div><div id="player"></div></div></td>
         </tr>
         
         <tr>
@@ -291,6 +308,35 @@
             loadVideo(prior[0]);
             prior.shift();
         }
+        nextSong();
+      }
+      
+      
+      function nextSong(){
+         if(!(prior && prior.length)){
+            if(standard && standard.length){
+                //standard
+                setNextTitle(standard[0]);
+            }else{
+                //standard empty
+                //last song plays
+                setNextTitle("");
+            }
+         }else{
+            //prior
+            setNextTitle(prior[0]);
+         }
+      }
+      
+      function setNextTitle(id){
+        if(id == ""){
+            document.getElementById("bg").innerHTML = "No next songs";
+        }else{
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("GET", "https://api.etherealtri.be/keyid/?"+id, false);
+            xmlhttp.send();
+            document.getElementById("bg").innerHTML = "Next: " + JSON.parse(xmlhttp.responseText).title;
+        }
       }
       
       //adds a song to the prior
@@ -330,6 +376,7 @@
         addPrior(id);
         removeStandard(id);
         generateSuggestions();
+        nextSong();
       }
       
       //remove an element from standard
@@ -391,20 +438,14 @@
       function lowerVolume(down){
         var cur = getVolume();
         var newv = cur-down;
-        if(newv<0){
-            newv = 0;
-        }
-        player.setVolume(newv);
+        setVolume(newv);
       }
       
       //raise the volume, volume range 0-100, up=amount
       function raiseVolume(up){
         var cur = getVolume();
         var newv = cur+up;
-        if(newv>100){
-            newv = 100;
-        }
-        player.setVolume(newv);
+        setVolume(newv);
       }
       
       //set the volume in absolute numbers 0-100
@@ -416,6 +457,8 @@
             vol = 0;
         }
         player.setVolume(vol);
+        var volbar = document.getElementById("volume");
+        volbar.value = vol;
       }
       
       function getVolume(){
