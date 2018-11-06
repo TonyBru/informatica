@@ -5,13 +5,14 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "package-win": "electron-packager . electron-tutorial-app --overwrite --asar=true --platform=win32 --arch=x64 --icon=ico/icon.ico --prune=true --out=release-builds --version-string.CompanyName=CE --version-string.FileDescription=CE --version-string.ProductName=\"Music Player\""
+    "package-win": "electron-packager . musicplayer --overwrite --asar=true --platform=win32 --arch=x64 --icon=ico/icon.ico --prune=true --out=release-builds --version-string.CompanyName=CE --version-string.FileDescription=CE --version-string.ProductName=\"Music Player\""
   },
   "devDependencies": {
     "electron": "^3.0.7",
     "electron-packager": "^12.2.0"
   },
   "dependencies": {
+    "http": "0.0.0",
     "node-static": "^0.7.11"
   }
 }
