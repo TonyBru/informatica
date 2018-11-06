@@ -1,11 +1,16 @@
 var static = require('node-static');
-var file = new static.Server(`./page`)
+var file = new static.Server('./page')
 
-require('http').createServer(function (request, response) {
+var server = require('http').createServer(function (request, response) {
     request.addListener('end', function () {
         file.serve(request, response)
     }).resume()
-}).listen(80)
+}).listen(8080)
+
+server.on('error', function (e) {
+  // Handle your error here
+  console.log(e);
+});
 
 
 const { app, BrowserWindow, globalShortcut } = require('electron')
@@ -21,8 +26,9 @@ function createWindow () {
   })
   
   globalShortcut.register('f5', function() {
-        app.relaunch()
-        app.exit(0)
+        //app.relaunch()
+        //app.exit(0)
+        win.reload()
 	})
     
     globalShortcut.register('f4', function() {
@@ -32,7 +38,9 @@ function createWindow () {
   
 
   // and load the index.html of the app.
-  win.loadURL('http://localhost', {"extraHeaders" : "pragma: no-cache\n"})
+  win.loadURL('http://localhost:8080', {"extraHeaders" : "pragma: no-cache\n"})
+  //win.loadURL('http://localhost')
+  //win.webContents.openDevTools();
 }
 
 app.on('ready', createWindow)
