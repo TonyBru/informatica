@@ -30,7 +30,7 @@ function createWindow () {
   const {width, height} = electron.screen.getPrimaryDisplay().workAreaSize
   win = new BrowserWindow({ alwaysOnTop: true, width: 10, height: 10, frame: true, icon: './ico/icon.ico', backgroundColor: '#121212', webPreferences: {devTools: false} })
   win.setMenu(null);
-  win.setContentSize(319,497)
+  win.setContentSize(327,497)
   
   win.setPosition(width-win.getSize()[0]+7,height-win.getSize()[1]+5)
   //win.setResizable(false)
