@@ -31,9 +31,8 @@ function createWindow () {
   win = new BrowserWindow({ alwaysOnTop: true, width: 10, height: 10, frame: true, icon: './ico/icon.ico', backgroundColor: '#121212', webPreferences: {devTools: false} })
   win.setMenu(null);
   win.setContentSize(327,497)
-  
   win.setPosition(width-win.getSize()[0]+7,height-win.getSize()[1]+5)
-  //win.setResizable(false)
+  win.setResizable(false)
   win.on('closed', () => {
     win = null
     app.quit();
@@ -43,12 +42,6 @@ function createWindow () {
         //app.relaunch()
         //app.exit(0)
         win.reload()
-	})
-    
-    globalShortcut.register('f6', function() {
-        //app.relaunch()
-        //app.exit(0)
-        
 	})
     
     globalShortcut.register('f4', function() {
