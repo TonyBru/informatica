@@ -17,11 +17,6 @@ var server = require('http').createServer(function (request, response) {
     }).resume()
 }).listen(48116)
 
-server.on('error', function (e) {
-  // Handle your error here
-  console.log(e);
-});
-
 const electron = require('electron')
 const { app, BrowserWindow, globalShortcut } = electron
 
@@ -39,8 +34,6 @@ function createWindow () {
   })
   
   globalShortcut.register('f5', function() {
-        //app.relaunch()
-        //app.exit(0)
         win.reload()
 	})
     
