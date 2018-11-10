@@ -1,0 +1,2 @@
+cd ./release-builds
+powershell.exe -nologo -noprofile -command "& { Add-Type -A 'System.IO.Compression.FileSystem'; [IO.Compression.ZipFile]::CreateFromDirectory('musicplayer-win32-x64', 'musicplayer-win32-x64.zip'); }
