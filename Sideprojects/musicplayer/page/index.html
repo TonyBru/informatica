@@ -142,6 +142,11 @@
             z-index: 10;
         }
         
+        #login{
+            position: absolute;
+            top: 10px;
+        }
+        
 	</style>
   </head>
   <body>
@@ -177,15 +182,29 @@
         <button onclick="start('playlist','ncs')">NCS</button>
     </div>
     
+    <div id="login">
+        <form onsubmit="return showPre()" autocomplete="off">
+          <input id="un" type="text">
+          <input type="submit">
+        </form>
+    </div>
+    
 
     <script>
     
         window.onload = function(){
+            
+        }
+        
+        function showPre(){
+            document.getElementById("login").style.visibility = "hidden";
+            var user = document.getElementById("un").value;
+            console.log(user);
             //generate pre
             var pre = document.getElementById("pre");
             pre.innerHTML = "";
             var xmlhttp = new XMLHttpRequest();
-            xmlhttp.open("GET", "https://api.etherealtri.be/start/", false);
+            xmlhttp.open("GET", "https://api.etherealtri.be/start/?" + user, false);
             xmlhttp.send();
             playlist = JSON.parse(xmlhttp.responseText);
             
@@ -194,6 +213,7 @@
             });
             
             pre.style.visibility = "visible";
+            return false;
         }
     
     
