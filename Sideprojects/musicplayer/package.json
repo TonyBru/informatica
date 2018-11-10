@@ -12,7 +12,7 @@
     "electron-packager": "^12.2.0"
   },
   "dependencies": {
-    "http": "0.0.0",
+    "electron-is-dev": "^1.0.1",
     "node-static": "^0.7.11"
   }
 }
