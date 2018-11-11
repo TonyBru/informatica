@@ -16,9 +16,10 @@ document.getElementsByClassName("gwt-ListBox")[3].onclick = function(){changeVal
     var value = document.getElementsByClassName("gwt-TextArea")[0].value;
     value = value.replace(/(\*|>|!|=|<|')/g, '<span style="color:#25b220; font-size: 17px"><b>$1</b></span>');
     value = value.replace(/select/ig, '<span style="color:blue"><b>SELECT</b></span>');
-    value = value.replace(/from/ig, '<span style="color:blue"><b>FROM</b></span>');
-    value = value.replace(/([^lL])(where|and|or)([^dD])/ig, '$1<span style="color:orange"><b>$2</b></span>$3');
-    value = value.replace(/ (is|like|ilike|between) /ig, '<span style="color:#c409ef"><b> $1 </b></span>');
+    value = value.replace(/from/ig, '<span style="color:blue"><b>FROM</b></span><br/>');
+    value = value.replace(/([^lL])(and|or)([^dD])/ig, '$1<span style="color:orange"><b>$2</b></span>$3');
+    value = value.replace(/([^lL])(where)([^dD])/ig, '$1<span style="color:orange"><b>$2</b></span>$3<br/>');
+    value = value.replace(/ (is|like|ilike|between|exists) /ig, '<span style="color:#c409ef"><b> $1 </b></span>');
     
     value = value.replace(/\(/g, '<span style="color:#f4425c; font-size: 17px">(</span><br/>');
     value = value.replace(/\)/g, '<br/><span style="color:#f4425c; font-size: 17px">)</span>');
